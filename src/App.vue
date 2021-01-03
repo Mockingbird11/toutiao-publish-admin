@@ -6,6 +6,7 @@
 </template>
 
 <script>
+// import LoginIndex from '@/views/login/index'
 export default {
   name: 'App',
   data () {
