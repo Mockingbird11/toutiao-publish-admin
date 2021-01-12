@@ -31,15 +31,15 @@
 </template>
 
 <script>
-import Request from '@/utils/request'
+import { login } from '@/api/user'
 export default {
   name: 'LoginIndex',
   data () {
     return {
       user: {
-        mobile: '',
-        code: '',
-        agree: false
+        mobile: '13911111111',
+        code: '246810',
+        agree: true
       },
       loginLoading: false, // 登录的Loading状态
       formRules: {
@@ -82,16 +82,16 @@ export default {
     login () {
       // 验证通过，提交登录
       this.loginLoading = true
-      Request({
-        method: 'POST',
-        url: '/mp/v1_0/authorizations',
-        data: this.user
-      }).then(res => {
+      login(this.user).then(res => {
         this.$message({
           message: '登陆成功',
           type: 'success'
         })
         this.loginLoading = false
+        // 跳转到首页
+        this.$router.push({
+          name: 'home'
+        })
       }).catch(err => {
         console.log(err)
         this.$message({
