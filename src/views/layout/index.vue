@@ -4,7 +4,25 @@
         <App-Aside class="aside-menu"/>
     </el-aside>
     <el-container>
-        <el-header class="header">Header</el-header>
+        <el-header class="header">
+          <div>
+            <i class="el-icon-s-fold"></i>
+            <span>黑马头条后台管理系统</span>
+          </div>
+          <el-dropdown :hide-on-click="false">
+            <div>
+              <img src="" alt="">
+              <!-- 设置头像与名字 -->
+            </div>
+            <!-- <span>
+              下拉菜单<i class="el-icon-arrow-down el-icon--right"></i>
+            </span> -->
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item>个人设置</el-dropdown-item>
+              <el-dropdown-item>用户退出</el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+        </el-header>
         <el-main class="main">
             <router-view/>
         </el-main>
@@ -53,8 +71,10 @@ export default {
   .header{
     background-color: #B3C0D1;
     color: #333;
-    text-align: center;
-    line-height: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
 
   .main{
