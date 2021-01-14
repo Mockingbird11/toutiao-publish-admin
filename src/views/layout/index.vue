@@ -1,22 +1,32 @@
 <template>
   <el-container class="layout-container">
-    <el-aside class="aside" width="200px">
-        <App-Aside class="aside-menu"/>
+    <el-aside class="aside" width="auto">
+        <AppAside class="aside-menu" :is-collapse="isCollapse" />
     </el-aside>
     <el-container>
         <el-header class="header">
           <div>
-            <i class="el-icon-s-fold"></i>
+            <!--
+              class 样式处理
+              {
+                css类名: 布尔值
+              }
+              true: 使用类名
+              false: 不使用类名
+             -->
+            <i :class="{
+              'el-icon-s-fold':!isCollapse,
+              'el-icon-s-unfold':isCollapse
+              }"
+              @click="isCollapse = !isCollapse"></i>
             <span>黑马头条后台管理系统</span>
           </div>
           <el-dropdown :hide-on-click="false">
-            <div>
-              <img src="" alt="">
-              <!-- 设置头像与名字 -->
+            <div class="UserInfoContainer">
+              <img class="headImg" :src="user.photo" alt="">
+              <span>{{ user.name }}</span>
+              <i class="el-icon-arrow-down el-icon--right"></i>
             </div>
-            <!-- <span>
-              下拉菜单<i class="el-icon-arrow-down el-icon--right"></i>
-            </span> -->
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item>个人设置</el-dropdown-item>
               <el-dropdown-item>用户退出</el-dropdown-item>
@@ -32,6 +42,8 @@
 
 <script>
 import AppAside from './components/aside'
+import { getUserProfile } from '@/api/user'
+
 export default {
   name: 'layoutIndex',
   components: {
@@ -39,13 +51,26 @@ export default {
   },
   props: {},
   data () {
-    return {}
+    return {
+      user: {}, // 当前登录用户信息
+      isCollapse: true // 侧边菜单栏的展开状态
+    }
   },
   computed: {},
   watch: {},
-  created () {},
+  created () {
+    // 组件初始化好，请求获取用户资料
+    this.loadUserProfile()
+  },
   mounted () {},
-  methods: {}
+  methods: {
+    // 除了登录接口，其他所有接口都需要授权才能请求使用
+    loadUserProfile () {
+      getUserProfile().then(res => {
+        this.user = res.data.data
+      })
+    }
+  }
 
 }
 </script>
@@ -69,12 +94,12 @@ export default {
   }
 
   .header{
-    background-color: #B3C0D1;
     color: #333;
     height: 60px;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    border-bottom: 1px solid #ccc;
   }
 
   .main{
@@ -82,5 +107,16 @@ export default {
     color: #333;
     text-align: center;
     line-height: 160px;
+  }
+  .headImg{
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+  }
+  .UserInfoContainer{
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 </style>

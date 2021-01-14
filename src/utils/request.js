@@ -10,6 +10,23 @@ const request = axios.create({
 })
 
 // 请求拦截器
+// Add a request interceptor
+request.interceptors.request.use(function (config) {
+  // Do Something before request is sent
+  // config 是当前请求相关的配置信息对象
+  // 在请求发出之前进行统一业务功能处理
+  // 例如：统一设置token
+  const user = JSON.parse(window.localStorage.getItem('user'))
+  // 如果有登录用户信息，则统一设置token
+  if (user) {
+    config.headers.Authorization = `Bearer ${user.token}`
+  }
+  // 当这里 return config 之后请求会真正的发出去
+  return config
+}, function (error) {
+  // Do something with request error
+  return Promise.reject(error)
+})
 
 // 响应拦截器
 
