@@ -29,7 +29,10 @@
             </div>
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item>个人设置</el-dropdown-item>
-              <el-dropdown-item>用户退出</el-dropdown-item>
+              <!-- 组件默认不识别原生事件，除非内部做了处理
+                   native : 原生事件修饰符
+               -->
+              <el-dropdown-item @click.native="onLogOut">用户退出</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
         </el-header>
@@ -53,7 +56,7 @@ export default {
   data () {
     return {
       user: {}, // 当前登录用户信息
-      isCollapse: true // 侧边菜单栏的展开状态
+      isCollapse: false // 侧边菜单栏的展开状态
     }
   },
   computed: {},
@@ -68,6 +71,19 @@ export default {
     loadUserProfile () {
       getUserProfile().then(res => {
         this.user = res.data.data
+      })
+    },
+    onLogOut () {
+      this.$confirm('确认退出吗?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        // 把用户登录状态清除，并跳转到登录页面
+        window.localStorage.removeItem('user')
+        this.$router.push('/login')
+      }).catch(() => {
+        return false
       })
     }
   }
@@ -105,8 +121,6 @@ export default {
   .main{
     background-color: #E9EEF3;
     color: #333;
-    text-align: center;
-    line-height: 160px;
   }
   .headImg{
     width: 40px;

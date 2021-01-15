@@ -45,7 +45,6 @@ export default {
   props: ['is-collapse'],
   data () {
     return {
-      // isCollapse: true
     }
   },
   methods: {}
