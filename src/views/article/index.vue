@@ -47,26 +47,40 @@
         <span>根据筛选条件共查询到1000条结果：</span>
         <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button>
       </div>
-      <!-- 数据列表 -->
+      <!-- 数据列表
+      Table表格组件
+      1、把需要展示的数组列表数据帮顶给 table 组件的data 属性
+      注意：不用 v-for 遍历，table组件会自动遍历
+      2、设计表格列 el-table-column
+      width 可以设定表格列的宽度
+      label 可以设定表头的标题
+      prop 用来设定要渲染的列表项数据字段
+       -->
       <el-table
-        :data="tableData"
+        :data="articles"
         style="width: 100%"
         stripe
         class="list-table"
         size='mini'>
         <el-table-column
-          prop="date"
-          label="日期"
-          width="180">
+          prop="convert.images"
+          label="封面">
         </el-table-column>
         <el-table-column
-          prop="name"
-          label="姓名"
-          width="180">
+          prop="title"
+          label="标题">
+        </el-table-column>
+        <el-table-column
+          prop="status"
+          label="状态">
+        </el-table-column>
+        <el-table-column
+          prop="pubdate"
+          label="发布时间">
         </el-table-column>
         <el-table-column
           prop="address"
-          label="地址">
+          label="操作">
         </el-table-column>
       </el-table>
       <!-- /数据列表 -->
