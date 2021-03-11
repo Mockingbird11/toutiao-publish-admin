@@ -65,22 +65,36 @@
         <el-table-column
           prop="convert.images"
           label="封面">
+          <template slot-scope="scope">
+            <img v-if="scope.row.cover.images[0]" :src="scope.row.cover.images[0]" alt="" class="article-cover">
+            <img v-else src="./noCover.png" alt="" class="article-cover">
+          </template>
         </el-table-column>
         <el-table-column
           prop="title"
           label="标题">
         </el-table-column>
         <el-table-column
-          prop="status"
-          label="状态">
+          prop="status">
+          <!-- 如果炫耀在自定义列模板中获取当前遍历项数据，那么就在 template 上声明 slot-scope="scope" -->
+          <template slot-scope="scope">
+            <el-tag :type="articleStatus[scope.row.status].type">{{articleStatus[scope.row.status].text}}</el-tag>
+          </template>
         </el-table-column>
         <el-table-column
           prop="pubdate"
           label="发布时间">
         </el-table-column>
         <el-table-column
-          prop="address"
           label="操作">
+          <!-- 如果需要自定义表格列模板，则把需要自定义的内容放到 template 里面 -->
+          <template>
+            <el-button
+              size="mini" type="primary" icon="el-icon-edit" circle></el-button>
+            <el-button
+              size="mini"
+              type="danger" icon="el-icon-delete" circle></el-button>
+      </template>
         </el-table-column>
       </el-table>
       <!-- /数据列表 -->
@@ -132,7 +146,14 @@ export default {
         name: '王小虎',
         address: '上海市普陀区金沙江路 1516 弄'
       }],
-      articles: [] // 文章数据列表
+      articles: [], // 文章数据列表
+      articleStatus: [
+        { status: 0, text: '草稿', type: 'info' },
+        { status: 1, text: '待审核', type: '' },
+        { status: 2, text: '审核通过', type: 'success' },
+        { status: 3, text: '审核失败', type: 'warning' },
+        { status: 4, text: '已删除', type: 'danger' }
+      ]
     }
   },
   created () {
@@ -143,7 +164,12 @@ export default {
       console.log('submit!')
     },
     loadArticles () {
-      getArticles().then(res => {
+      getArticles(
+        {
+          page: 2,
+          per_page: 50
+        }
+      ).then(res => {
         this.articles = res.data.data.results
       })
     }
@@ -157,5 +183,9 @@ export default {
 }
 .list-table{
   margin-bottom: 20px;
+}
+.article-cover{
+  width: 100px;
+  background-size: cover;
 }
 </style>
