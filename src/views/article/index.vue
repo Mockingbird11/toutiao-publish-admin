@@ -63,7 +63,7 @@
           label="封面">
           <template slot-scope="scope">
             <img v-if="scope.row.cover.images[0]" :src="scope.row.cover.images[0]" alt="" class="article-cover">
-            <img v-else src="./noCover.png" alt="" class="article-cover">
+            <img v-else src="./NoCover.jpg" alt="" class="article-cover">
           </template>
         </el-table-column>
         <el-table-column
