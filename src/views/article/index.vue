@@ -10,21 +10,16 @@
         <!-- /面包屑路径导航 -->
       </div>
       <!-- 数据筛选表单 -->
+      <!-- el-radio 默认把 label 作为文本和选中之后的 value 值 -->
       <el-form ref="form" :model="form" label-width="40px" size="mini">
         <el-form-item label="状态">
-          <el-radio-group v-model="form.resource">
-            <el-radio label="全部"></el-radio>
-            <el-radio label="草稿"></el-radio>
-            <el-radio label="待审核"></el-radio>
-            <el-radio label="审核通过"></el-radio>
-            <el-radio label="审核失败"></el-radio>
-            <el-radio label="已删除"></el-radio>
+          <el-radio-group v-model="status" >
+            <el-radio v-for="item in articleStatus" :key="item.status" :label="item.status">{{item.text}}</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="频道">
-          <el-select v-model="form.region" placeholder="请选择频道">
-            <el-option label="区域一" value="shanghai"></el-option>
-            <el-option label="区域二" value="beijing"></el-option>
+          <el-select v-model="currentChannel" placeholder="请选择频道">
+            <el-option v-for="item in channels" :label="item.name" :value="item.id" :key="item.id"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="日期">
@@ -37,14 +32,15 @@
           </el-date-picker>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="onSubmit">查询</el-button>
+          <!-- button 按钮的 click 事件有个默认参数 -->
+          <el-button type="primary" @click="loadArticles(1)">查询</el-button>
         </el-form-item>
       </el-form>
       <!-- /数据筛选表单 -->
     </el-card>
     <el-card class="filter-card">
       <div slot="header" class="clearfix">
-        <span>根据筛选条件共查询到1000条结果：</span>
+        <span>根据筛选条件共查询到{{totalCount}}条结果：</span>
         <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button>
       </div>
       <!-- 数据列表
@@ -100,10 +96,14 @@
       <!-- /数据列表 -->
 
       <!-- 列表分页 -->
+      <!-- total 用来设定总数据的条数
+           它默认按照10条每页计算总页码 -->
       <el-pagination
         background
         layout="prev, pager, next"
-        :total="1000">
+        :total="totalCount"
+        @current-change="onCurrentChange"
+        :page-size="pageSize">
       </el-pagination>
       <!-- /列表分页 -->
     </el-card>
@@ -111,7 +111,7 @@
 </template>
 
 <script>
-import { getArticles } from '@/api/article'
+import { getArticles, getChannels } from '@/api/article'
 
 export default {
   name: 'ArticleIndex',
@@ -129,23 +129,6 @@ export default {
         resource: '',
         desc: ''
       },
-      tableData: [{
-        date: '2016-05-02',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1518 弄'
-      }, {
-        date: '2016-05-04',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1517 弄'
-      }, {
-        date: '2016-05-01',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1519 弄'
-      }, {
-        date: '2016-05-03',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1516 弄'
-      }],
       articles: [], // 文章数据列表
       articleStatus: [
         { status: 0, text: '草稿', type: 'info' },
@@ -153,25 +136,43 @@ export default {
         { status: 2, text: '审核通过', type: 'success' },
         { status: 3, text: '审核失败', type: 'warning' },
         { status: 4, text: '已删除', type: 'danger' }
-      ]
+      ],
+      totalCount: 0, // 总数据条数
+      pageSize: 20, // 每页大小
+      status: null, // 查询文章的状态，不传为全部
+      channels: {}, // 频道列表
+      currentChannel: null
     }
   },
   created () {
-    this.loadArticles()
+    this.loadArticles(1)
+    this.loadChannel()
   },
   methods: {
     onSubmit () {
       console.log('submit!')
     },
-    loadArticles () {
+    loadArticles (page = 1) {
       getArticles(
         {
-          page: 2,
-          per_page: 50
+          page,
+          per_page: this.pageSize,
+          status: this.status,
+          channel_id: this.currentChannel
         }
       ).then(res => {
-        this.articles = res.data.data.results
+        const { results, total_count: totalCount } = res.data.data
+        this.totalCount = totalCount
+        this.articles = results
       })
+    },
+    loadChannel () {
+      getChannels().then(res => {
+        this.channels = res.data.data.channels
+      })
+    },
+    onCurrentChange (page) {
+      this.loadArticles(page)
     }
   }
 }

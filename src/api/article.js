@@ -17,3 +17,11 @@ export const getArticles = params => {
     params
   })
 }
+
+export const getChannels = params => {
+  return Request({
+    method: 'GET',
+    url: '/mp/v1_0/channels',
+    params
+  })
+}
