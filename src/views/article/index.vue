@@ -19,16 +19,17 @@
         </el-form-item>
         <el-form-item label="频道">
           <el-select v-model="currentChannel" placeholder="请选择频道">
+            <el-option label="全部" value="null"></el-option>
             <el-option v-for="item in channels" :label="item.name" :value="item.id" :key="item.id"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="日期">
-          <el-date-picker
-            v-model="form.date1"
-            type="datetimerange"
-            start-placeholder="开始日期"
-            end-placeholder="结束日期"
-            :default-time="['12:00:00']">
+           <el-date-picker
+            v-model="rangeDate"
+            type="daterange"
+            placeholder="选择日期"
+            format="yyyy-MM-dd"
+            value-format="yyyy-MM-dd">
           </el-date-picker>
         </el-form-item>
         <el-form-item>
@@ -57,13 +58,13 @@
         style="width: 100%"
         stripe
         class="list-table"
-        size='mini'>
+        size='mini'
+        v-loading="loading">
         <el-table-column
           prop="convert.images"
           label="封面">
           <template slot-scope="scope">
-            <img v-if="scope.row.cover.images[0]" :src="scope.row.cover.images[0]" alt="" class="article-cover">
-            <img v-else src="./NoCover.jpg" alt="" class="article-cover">
+            <el-image :src="scope.row.cover.images[0]" fit="cover" class="article-cover" lazy></el-image>
           </template>
         </el-table-column>
         <el-table-column
@@ -102,6 +103,7 @@
         background
         layout="prev, pager, next"
         :total="totalCount"
+        :disabled="loading"
         @current-change="onCurrentChange"
         :page-size="pageSize">
       </el-pagination>
@@ -141,7 +143,9 @@ export default {
       pageSize: 20, // 每页大小
       status: null, // 查询文章的状态，不传为全部
       channels: {}, // 频道列表
-      currentChannel: null
+      currentChannel: null,
+      rangeDate: null,
+      loading: false
     }
   },
   created () {
@@ -153,17 +157,21 @@ export default {
       console.log('submit!')
     },
     loadArticles (page = 1) {
+      this.loading = true
       getArticles(
         {
           page,
           per_page: this.pageSize,
           status: this.status,
-          channel_id: this.currentChannel
+          channel_id: this.currentChannel,
+          begin_pubdate: this.rangeDate ? this.rangeDate[0] : null,
+          end_pubdate: this.rangeDate ? this.rangeDate[1] : null
         }
       ).then(res => {
         const { results, total_count: totalCount } = res.data.data
         this.totalCount = totalCount
         this.articles = results
+        this.loading = false
       })
     },
     loadChannel () {
