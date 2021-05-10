@@ -10,34 +10,31 @@
         <!-- /面包屑路径导航 -->
       </div>
       <!-- 数据筛选表单 -->
+      <!-- el-radio 默认把 label 作为文本和选中之后的 value 值 -->
       <el-form ref="form" :model="form" label-width="40px" size="mini">
         <el-form-item label="状态">
-          <el-radio-group v-model="form.resource">
-            <el-radio label="全部"></el-radio>
-            <el-radio label="草稿"></el-radio>
-            <el-radio label="待审核"></el-radio>
-            <el-radio label="审核通过"></el-radio>
-            <el-radio label="审核失败"></el-radio>
-            <el-radio label="已删除"></el-radio>
+          <el-radio-group v-model="status" >
+            <el-radio v-for="item in articleStatus" :key="item.status" :label="item.status">{{item.text}}</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="频道">
-          <el-select v-model="form.region" placeholder="请选择频道">
-            <el-option label="区域一" value="shanghai"></el-option>
-            <el-option label="区域二" value="beijing"></el-option>
+          <el-select v-model="currentChannel" placeholder="请选择频道">
+            <el-option label="全部" value="null"></el-option>
+            <el-option v-for="item in channels" :label="item.name" :value="item.id" :key="item.id"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="日期">
-          <el-date-picker
-            v-model="form.date1"
-            type="datetimerange"
-            start-placeholder="开始日期"
-            end-placeholder="结束日期"
-            :default-time="['12:00:00']">
+           <el-date-picker
+            v-model="rangeDate"
+            type="daterange"
+            placeholder="选择日期"
+            format="yyyy-MM-dd"
+            value-format="yyyy-MM-dd">
           </el-date-picker>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="onSubmit">查询</el-button>
+          <!-- button 按钮的 click 事件有个默认参数 -->
+          <el-button type="primary" @click="loadArticles(1)">查询</el-button>
         </el-form-item>
       </el-form>
       <!-- /数据筛选表单 -->
@@ -61,13 +58,13 @@
         style="width: 100%"
         stripe
         class="list-table"
-        size='mini'>
+        size='mini'
+        v-loading="loading">
         <el-table-column
           prop="convert.images"
           label="封面">
           <template slot-scope="scope">
-            <img v-if="scope.row.cover.images[0]" :src="scope.row.cover.images[0]" alt="" class="article-cover">
-            <img v-else src="./NoCover.jpg" alt="" class="article-cover">
+            <el-image :src="scope.row.cover.images[0]" fit="cover" class="article-cover" lazy></el-image>
           </template>
         </el-table-column>
         <el-table-column
@@ -100,11 +97,15 @@
       <!-- /数据列表 -->
 
       <!-- 列表分页 -->
+      <!-- total 用来设定总数据的条数
+           它默认按照10条每页计算总页码 -->
       <el-pagination
         background
         layout="prev, pager, next"
-        :total=totalCount
-        @current-change=ChangePage>
+        :total="totalCount"
+        :disabled="loading"
+        @current-change="onCurrentChange"
+        :page-size="pageSize">
       </el-pagination>
       <!-- /列表分页 -->
     </el-card>
@@ -112,7 +113,7 @@
 </template>
 
 <script>
-import { getArticles } from '@/api/article'
+import { getArticles, getChannels } from '@/api/article'
 
 export default {
   name: 'ArticleIndex',
@@ -138,29 +139,48 @@ export default {
         { status: 3, text: '审核失败', type: 'warning' },
         { status: 4, text: '已删除', type: 'danger' }
       ],
-      totalCount: 0
+      totalCount: 0, // 总数据条数
+      pageSize: 20, // 每页大小
+      status: null, // 查询文章的状态，不传为全部
+      channels: {}, // 频道列表
+      currentChannel: null,
+      rangeDate: null,
+      loading: false
     }
   },
   created () {
-    this.loadArticles()
+    this.loadArticles(1)
+    this.loadChannel()
   },
   methods: {
     onSubmit () {
       console.log('submit!')
       this.loadArticles()
     },
-    loadArticles (page = 1, per_page = 10) {
+    loadArticles (page = 1) {
+      this.loading = true
       getArticles(
         {
           page,
-          per_page
+          per_page: this.pageSize,
+          status: this.status,
+          channel_id: this.currentChannel,
+          begin_pubdate: this.rangeDate ? this.rangeDate[0] : null,
+          end_pubdate: this.rangeDate ? this.rangeDate[1] : null
         }
       ).then(res => {
-        this.totalCount = res.data.data.total_count
-        this.articles = res.data.data.results
+        const { results, total_count: totalCount } = res.data.data
+        this.totalCount = totalCount
+        this.articles = results
+        this.loading = false
       })
     },
-    ChangePage (page) {
+    loadChannel () {
+      getChannels().then(res => {
+        this.channels = res.data.data.channels
+      })
+    },
+    onCurrentChange (page) {
       this.loadArticles(page)
     }
   }
