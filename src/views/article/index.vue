@@ -44,7 +44,7 @@
     </el-card>
     <el-card class="filter-card">
       <div slot="header" class="clearfix">
-        <span>根据筛选条件共查询到1000条结果：</span>
+        <span>根据筛选条件共查询到{{totalCount}}条结果：</span>
         <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button>
       </div>
       <!-- 数据列表
@@ -103,7 +103,8 @@
       <el-pagination
         background
         layout="prev, pager, next"
-        :total="1000">
+        :total=totalCount
+        @current-change=ChangePage>
       </el-pagination>
       <!-- /列表分页 -->
     </el-card>
@@ -129,23 +130,6 @@ export default {
         resource: '',
         desc: ''
       },
-      tableData: [{
-        date: '2016-05-02',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1518 弄'
-      }, {
-        date: '2016-05-04',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1517 弄'
-      }, {
-        date: '2016-05-01',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1519 弄'
-      }, {
-        date: '2016-05-03',
-        name: '王小虎',
-        address: '上海市普陀区金沙江路 1516 弄'
-      }],
       articles: [], // 文章数据列表
       articleStatus: [
         { status: 0, text: '草稿', type: 'info' },
@@ -153,7 +137,8 @@ export default {
         { status: 2, text: '审核通过', type: 'success' },
         { status: 3, text: '审核失败', type: 'warning' },
         { status: 4, text: '已删除', type: 'danger' }
-      ]
+      ],
+      totalCount: 0
     }
   },
   created () {
@@ -162,16 +147,21 @@ export default {
   methods: {
     onSubmit () {
       console.log('submit!')
+      this.loadArticles()
     },
-    loadArticles () {
+    loadArticles (page = 1, per_page = 10) {
       getArticles(
         {
-          page: 2,
-          per_page: 50
+          page,
+          per_page
         }
       ).then(res => {
+        this.totalCount = res.data.data.total_count
         this.articles = res.data.data.results
       })
+    },
+    ChangePage (page) {
+      this.loadArticles(page)
     }
   }
 }
